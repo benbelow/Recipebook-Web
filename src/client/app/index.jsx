@@ -1,69 +1,69 @@
 import React from 'react';
 import {render} from 'react-dom';
 
-var CommentBox = React.createClass({
+var SignInPanel = React.createClass({
   render: function() {
     return (
-      <div className="commentBox">
-        <h1>Comments</h1>
-        <CommentList data={this.props.data} />
-        <CommentForm />
+      <div>
+        <SignInButton/>
+        <SignOutButton/>
       </div>
-    );
+    )
   }
 });
 
-var CommentList = React.createClass({
-  render: function() {
-    var commentNodes = this.props.data.map(function(comment) {
-      return (
-        <Comment author={comment.author} key={comment.id}>
-          {comment.text}
-        </Comment>
-      );
-    });
-    return (
-      <div className="commentList">
-        {commentNodes}
-      </div>
-    );
-  }
-});
+var SignInButton = React.createClass({
+  onSignIn: function(googleUser) {
+    var profile = googleUser.getBasicProfile();
+    console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
+    console.log('Name: ' + profile.getName());
+    console.log('Image URL: ' + profile.getImageUrl());
+    console.log('Email: ' + profile.getEmail());
+  },
 
-var CommentForm = React.createClass({
-  render: function() {
-    return (
-      <div className="commentForm">
-        Hello, world! I am a CommentForm.
-      </div>
-    );
-  }
-});
+  renderGoogleLoginButton: function() {
+    console.log('rendering google signin button')
+    gapi.signin2.render('my-signin2', {
+      'scope': 'https://www.googleapis.com/auth/plus.login',
+      'width': 200,
+      'height': 50,
+      'longtitle': true,
+      'theme': 'light',
+      'onsuccess': this.onSignIn
+    })
+  },
 
-var Comment = React.createClass({
-  rawMarkup: function() {
-    var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
-    return { __html: rawMarkup };
+  componentDidMount: function() {
+    window.addEventListener('google-loaded',this.renderGoogleLoginButton);
   },
 
   render: function() {
+    let displayText = "Sign in with Google";
     return (
-      <div className="comment">
-        <h2 className="commentAuthor">
-          {this.props.author}
-        </h2>
-        <span dangerouslySetInnerHTML={this.rawMarkup()} />
+      <div>
+        <h2> HELLO</h2>
+        <div id="my-signin2"></div>
       </div>
     );
   }
 });
 
-var data = [
-  {id: 1, author: "Pete Hunter", text: "This is one comment"},
-  {id: 2, author: "Jordan Walke", text: "This is *another* comment"}
-];
+var SignOutButton = React.createClass({
+  render: function() {
+    return (
+      <a href='#' onClick={signOut}>Sign out</a>
+    )
+  }
+});
+
+function signOut(){
+  var auth2 = gapi.auth2.getAuthInstance();
+    auth2.signOut().then(function () {
+      console.log('User signed out.');
+    });
+}
 
 render(
-  <CommentBox data={data}/>,
+  <SignInPanel />,
   document.getElementById('app')
 );
